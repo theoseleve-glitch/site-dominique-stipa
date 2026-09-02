@@ -1,0 +1,44 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = `${site.name}, sculpteur à ${site.city}. Pierre, plâtre, clowns.` } = Astro.props;
+const fullTitle = title === site.name ? title : `${title} — ${site.name}`;
+---
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>document.documentElement.classList.remove('no-js');</script>
+    <ClientRouter />
+  </head>
+  <body>
+    <Nav />
+    <main id="contenu">
+      <slot />
+    </main>
+    <Footer />
+    <div class="grain" aria-hidden="true"></div>
+    <script>
+      import { initReveal } from '../scripts/reveal';
+      import { initParallax } from '../scripts/parallax';
+      document.addEventListener('astro:page-load', () => {
+        initReveal();
+        initParallax();
+      });
+    </script>
+  </body>
+</html>
