@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  prev: CollectionEntry<'oeuvres'> | null;
+  next: CollectionEntry<'oeuvres'> | null;
+}
+const { prev, next } = Astro.props;
+---
+<nav class="worknav container" aria-label="Œuvre précédente ou suivante">
+  {prev ? (
+    <a href={`/oeuvres/${prev.id}`} class="worknav__item">
+      <span class="label">← Précédente</span>
+      <span class="display worknav__title">{prev.data.title}</span>
+    </a>
+  ) : <span />}
+  <a href="/oeuvres" class="label link-underline worknav__all">Toutes les œuvres</a>
+  {next ? (
+    <a href={`/oeuvres/${next.id}`} class="worknav__item worknav__item--next">
+      <span class="label">Suivante →</span>
+      <span class="display worknav__title">{next.data.title}</span>
+    </a>
+  ) : <span />}
+</nav>
+<style>
+  .worknav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem;
+    padding-block: 6vh; border-top: 1px solid rgba(236,230,220,0.08); margin-top: 8vh; }
+  .worknav__item { display: grid; gap: 0.25rem; color: var(--text); }
+  .worknav__item--next { text-align: right; }
+  .worknav__title { font-size: clamp(1.2rem, 2vw, 1.8rem); }
+  .worknav__all { color: var(--text); }
+  @media (max-width: 600px) { .worknav__title { display: none; } }
+</style>

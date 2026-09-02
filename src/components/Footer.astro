@@ -1,0 +1,23 @@
+---
+import { site } from '../data/site';
+const year = new Date().getFullYear();
+---
+<footer class="footer">
+  <div class="container footer__inner">
+    <p class="label">{site.name} — {site.tagline}, {site.city}</p>
+    <nav aria-label="Contact" class="footer__links">
+      <a class="link-underline" href={`mailto:${site.email}`}>{site.email}</a>
+      <a class="link-underline" href={site.instagram} rel="noopener" target="_blank">Instagram {site.instagramHandle}</a>
+    </nav>
+    <p class="label">© {year} {site.name}</p>
+  </div>
+</footer>
+<style>
+  .footer { padding-block: 4rem 3rem; border-top: 1px solid rgba(236,230,220,0.08); margin-top: 6rem; }
+  .footer__inner { display: grid; gap: 1.5rem; }
+  .footer__links { display: flex; flex-wrap: wrap; gap: 2rem; font-size: 0.95rem; }
+  @media (min-width: 800px) {
+    .footer__inner { grid-template-columns: 1fr auto 1fr; align-items: center; }
+    .footer__inner > :last-child { text-align: right; }
+  }
+</style>

@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Page introuvable">
+  <section class="container nf">
+    <p class="label">Erreur 404</p>
+    <h1 class="display nf__title">Cette page n’existe pas.</h1>
+    <a href="/" class="label link-underline">Retour à l’accueil</a>
+  </section>
+</Base>
+<style>
+  .nf { min-height: 70vh; display: grid; align-content: center; gap: 1rem; padding-top: 20vh; }
+  .nf__title { font-size: clamp(2.4rem, 6vw, 5rem); margin: 0; }
+</style>

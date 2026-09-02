@@ -136,3 +136,30 @@ Later, the family replaces these with high-resolution originals by overwriting t
 
 Admin interface, online sales, Instagram sync, English version, contact form, blog or
 news feed, newsletter, custom cursor, sound.
+
+## 11. Comment ajouter une œuvre (pour la famille)
+
+1. Copier la photo (JPEG, idéalement 1600 px de large ou plus) dans `src/content/oeuvres/`,
+   par exemple `clown-blanc.jpg`.
+2. Créer à côté un fichier `clown-blanc.md` :
+
+   ```md
+   ---
+   title: "Le Clown blanc"
+   year: 2024
+   material: "Pierre calcaire"
+   dimensions: "45 × 30 × 25 cm"   # facultatif
+   featured: true                    # true = apparaît sur la page d'accueil (6 max)
+   order: 3                          # ordre sur l'accueil et dans le catalogue
+   image: "./clown-blanc.jpg"
+   alt: "Description courte de la photo pour l'accessibilité"
+   ---
+   Un paragraphe facultatif affiché sur la page de l'œuvre.
+   ```
+
+3. Lancer `npm run build` pour vérifier qu'il n'y a pas d'erreur (un champ manquant est signalé).
+4. `git add . && git commit -m "content: nouvelle œuvre" && git push` : Vercel redéploie le site.
+
+Textes du site (biographie, e-mail, Instagram, œuvre du bandeau d'accueil) : `src/data/site.ts`.
+Les fiches importées depuis Instagram portent un commentaire `TODO(famille)` : titre, année,
+matière et dimensions restent à vérifier.

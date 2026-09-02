@@ -1,0 +1,60 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import { Picture } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import WorkNav from '../../components/WorkNav.astro';
+import { sortByYearDesc, getNeighbours } from '../../lib/oeuvres';
+
+export async function getStaticPaths() {
+  const works = await getCollection('oeuvres');
+  return works.map((work) => ({ params: { slug: work.id }, props: { work } }));
+}
+
+interface Props {
+  work: CollectionEntry<'oeuvres'>;
+}
+const { work } = Astro.props;
+const sorted = sortByYearDesc(await getCollection('oeuvres'));
+const { prev, next } = getNeighbours(sorted, work.id);
+const { Content } = await render(work);
+const hasBody = Boolean(work.body && work.body.trim().length > 0);
+---
+<Base title={work.data.title} description={`${work.data.title}, ${work.data.year}, ${work.data.material}.`}>
+  <article class="work">
+    <figure class="work__figure">
+      <Picture
+        src={work.data.image}
+        alt={work.data.alt}
+        formats={['avif', 'webp']}
+        widths={[640, 1080]}
+        sizes="(max-width: 800px) 100vw, 80vw"
+        loading="eager"
+        fetchpriority="high"
+        transition:name={`oeuvre-${work.id}`}
+      />
+    </figure>
+    <div class="container work__meta">
+      <h1 class="display work__title reveal">{work.data.title}</h1>
+      <dl class="work__facts reveal">
+        <div><dt class="label">Année</dt><dd>{work.data.year}</dd></div>
+        <div><dt class="label">Matière</dt><dd>{work.data.material}</dd></div>
+        {work.data.dimensions && <div><dt class="label">Dimensions</dt><dd>{work.data.dimensions}</dd></div>}
+      </dl>
+      {hasBody && <div class="work__text reveal"><Content /></div>}
+    </div>
+  </article>
+  <WorkNav prev={prev} next={next} />
+</Base>
+<style>
+  .work__figure { margin: 0; min-height: 100svh; display: grid; place-items: center;
+    padding: 12vh 1.5rem 4vh; background: var(--bg); }
+  .work__figure :global(picture) { display: grid; place-items: center; max-width: 100%; }
+  .work__figure :global(img) { max-height: 82svh; width: auto; max-width: 100%; height: auto; object-fit: contain; }
+  .work__meta { padding-block: 6vh; display: grid; gap: 2rem; max-width: 70ch; }
+  .work__title { font-size: clamp(2.4rem, 6vw, 5.5rem); margin: 0; }
+  .work__facts { display: flex; flex-wrap: wrap; gap: 2.5rem; margin: 0; }
+  .work__facts dd { margin: 0.25rem 0 0; font-family: var(--font-display); font-size: 1.4rem; }
+  .work__text { font-size: 1.1rem; color: var(--text); max-width: 60ch; }
+  .work__text :global(p) { margin: 0 0 1em; }
+</style>

@@ -1,0 +1,44 @@
+---
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  work: CollectionEntry<'oeuvres'>;
+  index: number;
+}
+const { work, index } = Astro.props;
+// editorial rhythm: large, medium-right, medium-left, large...
+const variant = (['large', 'right', 'left'] as const)[index % 3];
+const number = String(index + 1).padStart(2, '0');
+---
+<article class:list={['entry', `entry--${variant}`, 'reveal']}>
+  <a href={`/oeuvres/${work.id}`} class="entry__link">
+    <Picture
+      src={work.data.image}
+      alt={work.data.alt}
+      formats={['avif', 'webp']}
+      widths={[480, 900, 1080]}
+      sizes={variant === 'large' ? '(max-width: 800px) 100vw, 70vw' : '(max-width: 800px) 100vw, 45vw'}
+      transition:name={`oeuvre-${work.id}`}
+    />
+    <div class="entry__caption">
+      <span class="numeral">{number}</span>
+      <h2 class="display entry__title">{work.data.title}</h2>
+      <p class="label">{work.data.year} — {work.data.material}</p>
+    </div>
+  </a>
+</article>
+<style>
+  .entry { margin-block: 10vh; }
+  .entry__link { display: block; }
+  .entry :global(img) { width: 100%; height: auto; transition: opacity 0.6s var(--ease); }
+  .entry__link:hover :global(img) { opacity: 0.85; }
+  .entry__caption { margin-top: 1.25rem; display: grid; gap: 0.25rem; }
+  .entry__title { font-size: clamp(1.6rem, 2.6vw, 2.4rem); margin: 0; }
+  @media (min-width: 800px) {
+    .entry--large { width: 70%; }
+    .entry--right { width: 45%; margin-left: auto; }
+    .entry--left { width: 45%; }
+    .entry--right .entry__caption { text-align: right; }
+  }
+</style>
