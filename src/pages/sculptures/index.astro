@@ -4,13 +4,13 @@ import Base from '../../layouts/Base.astro';
 import CatalogueEntry from '../../components/CatalogueEntry.astro';
 import { sortByYearDesc } from '../../lib/oeuvres';
 
-const works = sortByYearDesc(await getCollection('oeuvres'));
+const works = sortByYearDesc(await getCollection('sculptures'));
 ---
-<Base title="Œuvres">
+<Base title="Sculptures">
   <section class="container catalogue">
     <header class="catalogue__head reveal">
       <p class="label">Catalogue</p>
-      <h1 class="display catalogue__title">Œuvres</h1>
+      <h1 class="display catalogue__title">Sculptures</h1>
       <p class="label">{works.length} pièces</p>
     </header>
     {works.map((work, i) => <CatalogueEntry work={work} index={i} />)}

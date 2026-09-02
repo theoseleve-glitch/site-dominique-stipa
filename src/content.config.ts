@@ -2,8 +2,8 @@ import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 
-const oeuvres = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/oeuvres' }),
+const sculptures = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/sculptures' }),
   schema: ({ image }) =>
     z.object({
       title: z.string().min(1),
@@ -17,4 +17,4 @@ const oeuvres = defineCollection({
     }),
 });
 
-export const collections = { oeuvres };
+export const collections = { sculptures };

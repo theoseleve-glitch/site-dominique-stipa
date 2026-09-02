@@ -6,9 +6,9 @@ import FeaturedWork from '../components/FeaturedWork.astro';
 import { getFeatured } from '../lib/oeuvres';
 import { site } from '../data/site';
 
-const all = await getCollection('oeuvres');
+const all = await getCollection('sculptures');
 const hero = all.find((w) => w.id === site.heroSlug) ?? all[0];
-if (!hero) throw new Error('Aucune œuvre : ajoutez un fichier dans src/content/oeuvres/');
+if (!hero) throw new Error('Aucune sculpture : ajoutez un fichier dans src/content/sculptures/');
 const featured = getFeatured(all).filter((w) => w.id !== hero.id);
 ---
 <Base title={site.name}>
@@ -22,7 +22,7 @@ const featured = getFeatured(all).filter((w) => w.id !== hero.id);
     <a href="/a-propos" class="label link-underline">Lire la suite</a>
   </section>
   <section class="container all reveal">
-    <a href="/oeuvres" class="display link-underline all__link">Voir toutes les œuvres</a>
+    <a href="/sculptures" class="display link-underline all__link">Voir toutes les sculptures</a>
   </section>
 </Base>
 <style>

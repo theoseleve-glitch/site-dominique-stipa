@@ -2,21 +2,21 @@
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
-  prev: CollectionEntry<'oeuvres'> | null;
-  next: CollectionEntry<'oeuvres'> | null;
+  prev: CollectionEntry<'sculptures'> | null;
+  next: CollectionEntry<'sculptures'> | null;
 }
 const { prev, next } = Astro.props;
 ---
-<nav class="worknav container" aria-label="Œuvre précédente ou suivante">
+<nav class="worknav container" aria-label="Sculpture précédente ou suivante">
   {prev ? (
-    <a href={`/oeuvres/${prev.id}`} class="worknav__item">
+    <a href={`/sculptures/${prev.id}`} class="worknav__item">
       <span class="label">← Précédente</span>
       <span class="display worknav__title">{prev.data.title}</span>
     </a>
   ) : <span />}
-  <a href="/oeuvres" class="label link-underline worknav__all">Toutes les œuvres</a>
+  <a href="/sculptures" class="label link-underline worknav__all">Toutes les sculptures</a>
   {next ? (
-    <a href={`/oeuvres/${next.id}`} class="worknav__item worknav__item--next">
+    <a href={`/sculptures/${next.id}`} class="worknav__item worknav__item--next">
       <span class="label">Suivante →</span>
       <span class="display worknav__title">{next.data.title}</span>
     </a>

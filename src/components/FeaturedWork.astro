@@ -3,7 +3,7 @@ import { Picture } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
-  work: CollectionEntry<'oeuvres'>;
+  work: CollectionEntry<'sculptures'>;
   index: number;
 }
 const { work, index } = Astro.props;
@@ -11,19 +11,19 @@ const numerals = ['I', 'II', 'III', 'IV', 'V', 'VI'];
 const flip = index % 2 === 1;
 ---
 <article class:list={['feat', { 'feat--flip': flip }]}>
-  <a href={`/oeuvres/${work.id}`} class="feat__media reveal" data-parallax="0.12">
+  <a href={`/sculptures/${work.id}`} class="feat__media reveal" data-parallax="0.12">
     <Picture
       src={work.data.image}
       alt={work.data.alt}
       formats={['avif', 'webp']}
       widths={[480, 900, 1080]}
       sizes="(max-width: 800px) 100vw, 60vw"
-      transition:name={`oeuvre-${work.id}`}
+      transition:name={`sculpture-${work.id}`}
     />
   </a>
   <div class="feat__text reveal" data-parallax="0.04">
     <p class="numeral">{numerals[index] ?? index + 1}</p>
-    <h2 class="display feat__title"><a href={`/oeuvres/${work.id}`}>{work.data.title}</a></h2>
+    <h2 class="display feat__title"><a href={`/sculptures/${work.id}`}>{work.data.title}</a></h2>
     <p class="label">{work.data.year} — {work.data.material}</p>
   </div>
 </article>

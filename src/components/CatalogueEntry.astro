@@ -3,7 +3,7 @@ import { Picture } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
-  work: CollectionEntry<'oeuvres'>;
+  work: CollectionEntry<'sculptures'>;
   index: number;
 }
 const { work, index } = Astro.props;
@@ -12,14 +12,14 @@ const variant = (['large', 'right', 'left'] as const)[index % 3];
 const number = String(index + 1).padStart(2, '0');
 ---
 <article class:list={['entry', `entry--${variant}`, 'reveal']}>
-  <a href={`/oeuvres/${work.id}`} class="entry__link">
+  <a href={`/sculptures/${work.id}`} class="entry__link">
     <Picture
       src={work.data.image}
       alt={work.data.alt}
       formats={['avif', 'webp']}
       widths={[480, 900, 1080]}
       sizes={variant === 'large' ? '(max-width: 800px) 100vw, 70vw' : '(max-width: 800px) 100vw, 45vw'}
-      transition:name={`oeuvre-${work.id}`}
+      transition:name={`sculpture-${work.id}`}
     />
     <div class="entry__caption">
       <span class="numeral">{number}</span>

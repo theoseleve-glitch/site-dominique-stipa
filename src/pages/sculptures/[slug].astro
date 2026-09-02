@@ -7,15 +7,15 @@ import WorkNav from '../../components/WorkNav.astro';
 import { sortByYearDesc, getNeighbours } from '../../lib/oeuvres';
 
 export async function getStaticPaths() {
-  const works = await getCollection('oeuvres');
+  const works = await getCollection('sculptures');
   return works.map((work) => ({ params: { slug: work.id }, props: { work } }));
 }
 
 interface Props {
-  work: CollectionEntry<'oeuvres'>;
+  work: CollectionEntry<'sculptures'>;
 }
 const { work } = Astro.props;
-const sorted = sortByYearDesc(await getCollection('oeuvres'));
+const sorted = sortByYearDesc(await getCollection('sculptures'));
 const { prev, next } = getNeighbours(sorted, work.id);
 const { Content } = await render(work);
 const hasBody = Boolean(work.body && work.body.trim().length > 0);
@@ -31,7 +31,7 @@ const hasBody = Boolean(work.body && work.body.trim().length > 0);
         sizes="(max-width: 800px) 100vw, 80vw"
         loading="eager"
         fetchpriority="high"
-        transition:name={`oeuvre-${work.id}`}
+        transition:name={`sculpture-${work.id}`}
       />
     </figure>
     <div class="container work__meta">

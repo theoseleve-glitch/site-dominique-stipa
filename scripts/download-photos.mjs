@@ -1,12 +1,12 @@
 // Télécharge les photos listées dans scripts/photos.json (posts publics Instagram)
-// et crée un fichier Markdown par œuvre dans src/content/oeuvres/.
+// et crée un fichier Markdown par œuvre dans src/content/sculptures/.
 // Usage : node scripts/download-photos.mjs
 import { readFile, writeFile, access, mkdir } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import path from 'node:path';
 
 const list = JSON.parse(await readFile('scripts/photos.json', 'utf8'));
-const dir = 'src/content/oeuvres';
+const dir = 'src/content/sculptures';
 await mkdir('src/assets', { recursive: true });
 await mkdir(dir, { recursive: true });
 

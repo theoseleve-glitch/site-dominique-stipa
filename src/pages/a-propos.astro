@@ -3,7 +3,6 @@ import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { site } from '../data/site';
 import atelier from '../assets/atelier.jpg';
-import poster from '../assets/taille-directe-poster.jpg';
 ---
 <Base title="À propos">
   <section class="container about">
@@ -28,24 +27,34 @@ import poster from '../assets/taille-directe-poster.jpg';
     </div>
   </section>
 
-  <section class="container atelier reveal" aria-labelledby="atelier-title">
-    <p class="label">L’atelier</p>
-    <h2 id="atelier-title" class="display atelier__title">Taille directe</h2>
-    <p class="atelier__p">Aucun modèle, aucun tracé : le geste décide. Quelques minutes dans l’atelier.</p>
-    <video
-      class="atelier__video"
-      muted
-      loop
-      playsinline
-      preload="none"
-      poster={poster.src}
-      width="640"
-      height="360"
-      aria-label="Dominique Stipa taille une pierre dans son atelier, vu du dessus"
-      data-autoplay-in-view
-    >
-      <source src="/videos/taille-directe.mp4" type="video/mp4" />
-    </video>
+  <section class="container atelier" aria-labelledby="atelier-title">
+    <p class="label reveal">L’atelier</p>
+    <h2 id="atelier-title" class="display atelier__title reveal">Cartes postales</h2>
+    <p class="atelier__p reveal">Quelques minutes dans l’atelier et le jardin, sans commentaire.</p>
+    <div class="atelier__grid">
+      {site.videos.map((v, i) => (
+        <figure class:list={['atelier__item', 'reveal', { 'atelier__item--wide': i === 0 }]}>
+          <video
+            class="atelier__video"
+            muted
+            loop
+            playsinline
+            preload="none"
+            poster={v.poster}
+            width="640"
+            height="360"
+            aria-label={v.title}
+            data-autoplay-in-view
+          >
+            <source src={v.file} type="video/mp4" />
+          </video>
+          <figcaption>
+            <span class="display atelier__item-title">{v.title}</span>
+            <span class="label">{v.caption}</span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
   </section>
 
   <section id="contact" class="container contact reveal">
@@ -66,8 +75,17 @@ import poster from '../assets/taille-directe-poster.jpg';
   .atelier { margin-top: 14vh; display: grid; gap: 0.75rem; }
   .atelier__title { font-size: clamp(2.2rem, 5vw, 4.5rem); margin: 0; }
   .atelier__p { margin: 0 0 1.5rem; color: var(--muted); max-width: 58ch; }
-  .atelier__video { width: min(100%, calc(72vh * 16 / 9)); height: auto; aspect-ratio: 16 / 9;
-    background: var(--surface); object-fit: cover; display: block; }
+  .atelier__grid { display: grid; gap: 2.5rem 3rem; }
+  .atelier__item { margin: 0; display: grid; gap: 0.75rem; }
+  .atelier__video { width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--surface); object-fit: cover; display: block; }
+  .atelier__item figcaption { display: grid; gap: 0.2rem; }
+  .atelier__item-title { font-size: 1.5rem; }
+  @media (min-width: 800px) {
+    .atelier__grid { grid-template-columns: 1fr 1fr; }
+    .atelier__item--wide { grid-column: 1 / -1; }
+    .atelier__item--wide .atelier__video { width: min(100%, calc(72vh * 16 / 9)); }
+    .atelier__item--wide .atelier__item-title { font-size: 2rem; }
+  }
   .contact { margin-top: 12vh; scroll-margin-top: 20vh; display: grid; gap: 0.5rem; }
   .contact__line { font-size: clamp(1.4rem, 3vw, 2.4rem); margin: 0; }
   @media (min-width: 800px) {
