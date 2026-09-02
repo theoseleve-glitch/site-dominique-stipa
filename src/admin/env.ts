@@ -12,7 +12,7 @@ export interface AdminEnv {
 function read(name: string): string | undefined {
   // Vercel functions expose env vars on process.env; Astro dev also fills import.meta.env from .env
   const fromProcess = typeof process !== 'undefined' ? process.env[name] : undefined;
-  const fromMeta = (import.meta.env as Record<string, string | undefined>)[name];
+  const fromMeta = ((import.meta as { env?: Record<string, string | undefined> }).env ?? {})[name];
   return fromProcess ?? fromMeta;
 }
 
