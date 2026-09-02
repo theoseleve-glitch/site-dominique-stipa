@@ -11,6 +11,10 @@ describe('sortByYearDesc', () => {
     const items = [mk('a', 2020), mk('b', 2023), mk('c', 2023), mk('d', 2019)];
     expect(sortByYearDesc(items).map((i) => i.id)).toEqual(['b', 'c', 'a', 'd']);
   });
+  it('breaks year ties by ascending order', () => {
+    const items = [mk('a', 2025, false, 5), mk('b', 2025, false, 1), mk('c', 2025, false, 3)];
+    expect(sortByYearDesc(items).map((i) => i.id)).toEqual(['b', 'c', 'a']);
+  });
   it('does not mutate the input', () => {
     const items = [mk('a', 2020), mk('b', 2023)];
     sortByYearDesc(items);

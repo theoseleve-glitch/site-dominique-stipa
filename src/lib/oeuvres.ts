@@ -4,7 +4,7 @@ export type OeuvreLike = {
 };
 
 export function sortByYearDesc<T extends OeuvreLike>(items: T[]): T[] {
-  return [...items].sort((a, b) => b.data.year - a.data.year);
+  return [...items].sort((a, b) => b.data.year - a.data.year || a.data.order - b.data.order);
 }
 
 export function getFeatured<T extends OeuvreLike>(items: T[], max = 6): T[] {
