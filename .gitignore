@@ -31,3 +31,5 @@ pnpm-debug.log*
 .playwright-mcp/
 *.jpeg
 lighthouse*.json
+
+.vercel

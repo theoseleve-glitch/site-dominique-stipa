@@ -163,3 +163,12 @@ news feed, newsletter, custom cursor, sound.
 Textes du site (biographie, e-mail, Instagram, œuvre du bandeau d'accueil) : `src/data/site.ts`.
 Les fiches importées depuis Instagram portent un commentaire `TODO(famille)` : titre, année,
 matière et dimensions restent à vérifier.
+
+## 12. Deployment
+
+- Code: private GitHub repo `theoseleve-glitch/site-dominique-stipa`, branch `master`.
+- Vercel: project creation through the Claude connector was refused (403). A temporary
+  anonymous deployment was made on 2026-09-02 with `vercel deploy --temporary`
+  (expires after 60 minutes unless claimed). Permanent setup: run `vercel login` once, then
+  `vercel link` and `vercel --prod` from the project folder, or import the GitHub repo at
+  https://vercel.com/new so every push to `master` redeploys.
