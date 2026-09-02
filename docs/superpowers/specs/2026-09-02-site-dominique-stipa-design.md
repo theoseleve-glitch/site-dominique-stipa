@@ -166,9 +166,9 @@ matière et dimensions restent à vérifier.
 
 ## 12. Deployment
 
-- Code: private GitHub repo `theoseleve-glitch/site-dominique-stipa`, branch `master`.
-- Vercel: project creation through the Claude connector was refused (403). A temporary
-  anonymous deployment was made on 2026-09-02 with `vercel deploy --temporary`
-  (expires after 60 minutes unless claimed). Permanent setup: run `vercel login` once, then
-  `vercel link` and `vercel --prod` from the project folder, or import the GitHub repo at
-  https://vercel.com/new so every push to `master` redeploys.
+- Production: https://site-dominique-stipa.vercel.app (Vercel project `site-dominique-stipa`,
+  team "theoseleve-4144's projects", hobby plan).
+- Code: private GitHub repo `theoseleve-glitch/site-dominique-stipa`, branch `master`, connected
+  to the Vercel project: every push to `master` redeploys production.
+- Manual deploy from the folder if ever needed: `vercel --prod` (Vercel CLI, logged in).
+- Custom domain: add it in the Vercel project settings (Domains) when the family picks one.
