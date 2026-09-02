@@ -1,9 +1,33 @@
 ---
+import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import FeaturedWork from '../components/FeaturedWork.astro';
+import { getFeatured } from '../lib/oeuvres';
 import { site } from '../data/site';
+
+const all = await getCollection('oeuvres');
+const hero = all.find((w) => w.id === site.heroSlug) ?? all[0];
+if (!hero) throw new Error('Aucune œuvre : ajoutez un fichier dans src/content/oeuvres/');
+const featured = getFeatured(all).filter((w) => w.id !== hero.id);
 ---
 <Base title={site.name}>
-  <section class="container" style="padding-top: 40vh">
-    <h1 class="display reveal">{site.name}</h1>
+  <Hero work={hero} />
+  <section id="parcours" aria-label="Parcours">
+    {featured.map((work, i) => <FeaturedWork work={work} index={i} />)}
+  </section>
+  <section class="container teaser reveal">
+    <p class="label">L’artiste</p>
+    <p class="display teaser__text">{site.bio[0]}</p>
+    <a href="/a-propos" class="label link-underline">Lire la suite</a>
+  </section>
+  <section class="container all reveal">
+    <a href="/oeuvres" class="display link-underline all__link">Voir toutes les œuvres</a>
   </section>
 </Base>
+<style>
+  .teaser { padding-block: 12vh; max-width: 60ch; }
+  .teaser__text { font-size: clamp(1.6rem, 3vw, 2.6rem); margin: 1rem 0 2rem; }
+  .all { padding-block: 6vh 10vh; }
+  .all__link { font-size: clamp(1.8rem, 4vw, 3.2rem); color: var(--text); }
+</style>

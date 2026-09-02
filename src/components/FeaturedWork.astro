@@ -1,0 +1,41 @@
+---
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  work: CollectionEntry<'oeuvres'>;
+  index: number;
+}
+const { work, index } = Astro.props;
+const numerals = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+const flip = index % 2 === 1;
+---
+<article class:list={['feat', { 'feat--flip': flip }]}>
+  <a href={`/oeuvres/${work.id}`} class="feat__media reveal" data-parallax="0.12">
+    <Picture
+      src={work.data.image}
+      alt={work.data.alt}
+      formats={['avif', 'webp']}
+      widths={[480, 900, 1080]}
+      sizes="(max-width: 800px) 100vw, 60vw"
+      transition:name={`oeuvre-${work.id}`}
+    />
+  </a>
+  <div class="feat__text reveal" data-parallax="0.04">
+    <p class="numeral">{numerals[index] ?? index + 1}</p>
+    <h2 class="display feat__title"><a href={`/oeuvres/${work.id}`}>{work.data.title}</a></h2>
+    <p class="label">{work.data.year} — {work.data.material}</p>
+  </div>
+</article>
+<style>
+  .feat { display: grid; gap: 2rem; align-items: center; min-height: 90vh; padding-block: 8vh;
+    width: min(100% - 3rem, var(--max)); margin-inline: auto; }
+  .feat__media :global(img) { width: auto; max-width: 100%; height: auto; max-height: 82vh; margin-inline: auto; }
+  .feat--flip .feat__media :global(img) { margin-inline: auto 0; }
+  .feat__title { font-size: clamp(2.2rem, 5vw, 4.5rem); margin: 0.5rem 0 1rem; }
+  @media (min-width: 800px) {
+    .feat { grid-template-columns: 7fr 4fr; gap: 6vw; }
+    .feat--flip .feat__media { order: 2; }
+    .feat--flip .feat__text { text-align: right; }
+  }
+</style>
