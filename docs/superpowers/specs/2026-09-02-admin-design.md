@@ -1,7 +1,7 @@
 # Admin (espace d'édition) — Design Spec
 
 Date: 2026-09-02
-Status: approved in conversation (design + fine-grained GitHub token)
+Status: implemented 2026-09-02 (verified end to end on a throwaway branch); waiting for GITHUB_TOKEN in Vercel
 
 ## 1. Goal
 

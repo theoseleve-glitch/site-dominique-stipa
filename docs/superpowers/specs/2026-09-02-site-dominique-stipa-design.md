@@ -140,38 +140,35 @@ Later, the family replaces these with high-resolution originals by overwriting t
 Admin interface, online sales, Instagram sync, English version, contact form, blog or
 news feed, newsletter, custom cursor, sound.
 
-## 11. Comment ajouter une œuvre (pour la famille)
+## 11. Comment modifier le site (pour la famille)
 
-1. Copier la photo (JPEG, idéalement 1600 px de large ou plus) dans `src/content/oeuvres/`,
-   par exemple `clown-blanc.jpg`.
-2. Créer à côté un fichier `clown-blanc.md` :
+Tout se fait depuis l'espace d'édition : **https://site-dominique-stipa.vercel.app/admin**
 
-   ```md
-   ---
-   title: "Le Clown blanc"
-   year: 2024
-   material: "Pierre calcaire"
-   dimensions: "45 × 30 × 25 cm"   # facultatif
-   featured: true                    # true = apparaît sur la page d'accueil (6 max)
-   order: 3                          # ordre sur l'accueil et dans le catalogue
-   image: "./clown-blanc.jpg"
-   alt: "Description courte de la photo pour l'accessibilité"
-   ---
-   Un paragraphe facultatif affiché sur la page de l'œuvre.
-   ```
+- Première visite : la page « Installation » demande une adresse e-mail et un mot de passe
+  (10 caractères minimum). Ce sont les identifiants de l'artiste ; il n'y en a qu'un seul.
+- Ensuite : « Ajouter une sculpture » (photo, titre, année, matière, dimensions), « Modifier »
+  sur chaque sculpture (y compris la supprimer), « Textes du site » (biographie, phrase
+  d'accueil, contact, photo de l'artiste, sculpture du bandeau, nouveau mot de passe) et
+  « Vidéos » (ajouter, supprimer, réordonner).
+- Chaque enregistrement est publié automatiquement ; comptez environ deux minutes.
+- Mot de passe oublié : Théo supprime le fichier `src/data/admin.json` du dépôt (ou le
+  remplace) et la page « Installation » réapparaît.
+- Jeton GitHub expiré (message « Le jeton GitHub est invalide ou expiré ») : Théo crée un
+  nouveau jeton fine-grained (dépôt `site-dominique-stipa`, permission Contents : lecture et
+  écriture) et le renseigne dans Vercel → Settings → Environment Variables → `GITHUB_TOKEN`,
+  puis redéploie.
 
-3. Lancer `npm run build` pour vérifier qu'il n'y a pas d'erreur (un champ manquant est signalé).
-4. `git add . && git commit -m "content: nouvelle œuvre" && git push` : Vercel redéploie le site.
-
-Textes du site (biographie, e-mail, Instagram, œuvre du bandeau d'accueil) : `src/data/site.ts`.
-Les fiches importées depuis Instagram portent un commentaire `TODO(famille)` : titre, année,
-matière et dimensions restent à vérifier.
+Pour les développeurs, l'ancienne méthode reste valable : un fichier Markdown + une photo dans
+`src/content/sculptures/`, les textes dans `src/data/site.json`, puis `git push`.
 
 ## 12. Deployment
 
 - Production: https://site-dominique-stipa.vercel.app (Vercel project `site-dominique-stipa`,
-  team "theoseleve-4144's projects", hobby plan).
+  team "theoseleve-4144's projects", hobby plan). Admin at `/admin` (see the admin spec).
 - Code: private GitHub repo `theoseleve-glitch/site-dominique-stipa`, branch `master`, connected
-  to the Vercel project: every push to `master` redeploys production.
+  to the Vercel project: every push to `master` redeploys production. Admin saves are commits
+  on `master` made through the GitHub API, so they redeploy the same way.
+- Vercel env vars (Production): `SESSION_SECRET`, `GITHUB_REPO`, `GITHUB_BRANCH=master`,
+  `GITHUB_TOKEN` (fine-grained, this repo only, Contents read/write, renewed yearly).
 - Manual deploy from the folder if ever needed: `vercel --prod` (Vercel CLI, logged in).
 - Custom domain: add it in the Vercel project settings (Domains) when the family picks one.
