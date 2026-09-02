@@ -9,6 +9,7 @@
   --text: #ece6dc;
   --muted: #8a857c;
   --accent: #c0392b;
+  --accent-text: #d9584a;
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-sans: 'Inter Variable', system-ui, sans-serif;
   --max: 1400px;
@@ -41,7 +42,8 @@ a:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
   text-transform: uppercase;
   color: var(--muted);
 }
-.numeral { font-family: var(--font-display); color: var(--accent); font-size: 1.1rem; letter-spacing: 0.1em; }
+/* accent-text is a lighter tint of the accent so small text keeps a 4.5:1 contrast on the dark ground */
+.numeral { font-family: var(--font-display); color: var(--accent-text); font-size: 1.1rem; letter-spacing: 0.1em; }
 .link-underline { position: relative; }
 .link-underline::after {
   content: ''; position: absolute; left: 0; bottom: -0.25em; height: 1px; width: 100%;

@@ -26,3 +26,8 @@ pnpm-debug.log*
 # vercel
 .vercel/
 .env.*
+
+# local screenshots / tooling
+.playwright-mcp/
+*.jpeg
+lighthouse*.json
