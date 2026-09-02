@@ -8,7 +8,7 @@ export const site = {
   instagram: 'https://www.instagram.com/domistipa/',
   instagramHandle: '@domistipa',
   /** slug of the work shown in the home hero */
-  heroSlug: 'exemple-un',
+  heroSlug: 'numero-1',
   bio: [
     // TODO(famille): remplacer par la vraie biographie
     'Dominique Stipa est un artiste sculpteur et plasticien installé à La Rochelle. Il travaille la pierre et le plâtre, et revient sans cesse à une figure : le clown.',

@@ -1,0 +1,19 @@
+[
+  { "slug": "numero-1", "code": "DPHEN6nDIjB", "year": 2025, "title": "N°1", "alt": "Tête de clown souriante aux cheveux lisses, pierre blanche", "featured": true, "order": 1,
+    "caption": "Présentée au salon « Laissez parler votre imaginaire », septembre 2025." },
+  { "slug": "numero-2", "code": "DPHEZp9DG0c", "year": 2025, "title": "N°2", "alt": "Forme verticale creusée de flammes, pierre blanche", "featured": true, "order": 2,
+    "caption": "Présentée au salon « Laissez parler votre imaginaire », septembre 2025." },
+  { "slug": "numero-3", "code": "DPHEjt6DKtZ", "year": 2025, "title": "N°3", "alt": "Visage grave au sommet brut, pierre blanche", "featured": true, "order": 4,
+    "caption": "Présentée au salon « Laissez parler votre imaginaire », septembre 2025." },
+  { "slug": "numero-4", "code": "DPHEtt7jOOy", "year": 2025, "title": "N°4", "alt": "Forme élancée torsadée, pierre blanche", "featured": true, "order": 3,
+    "caption": "Présentée au salon « Laissez parler votre imaginaire », septembre 2025." },
+  { "slug": "numero-5", "code": "DPHE7Y1DG8u", "year": 2025, "title": "N°5", "alt": "Silhouette drapée sur deux jambes, pierre blanche", "featured": false, "order": 7,
+    "caption": "Présentée au salon « Laissez parler votre imaginaire », septembre 2025." },
+  { "slug": "masque", "code": "DPHFviaDLj0", "year": 2025, "title": "N°6", "alt": "Masque de pierre blanche posé devant des feuillages", "featured": true, "order": 5,
+    "caption": "Présentée au salon « Laissez parler votre imaginaire », septembre 2025." },
+  { "slug": "en-cours-de-taille", "code": "DO_cSGfjEHq", "year": 2025, "title": "En cours de taille", "alt": "Visage en cours de taille, traits au crayon sur la pierre, outils sur l’établi", "featured": true, "order": 6,
+    "caption": "Dans l’atelier : le visage émerge du bloc, guidé par les tracés au crayon." },
+  { "slug": "prete-pour-un-long-voyage", "code": "DO_h_W_DJaP", "year": 2025, "title": "Prête pour un long voyage", "alt": "Ensemble de sculptures blanches sur socles dans l’atelier", "featured": false, "order": 8,
+    "caption": "Prête pour un long voyage." },
+  { "slug": "atelier", "code": "DPHFvodjDna", "year": 2025, "portrait": true }
+]
