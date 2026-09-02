@@ -5,8 +5,11 @@ Status: approved in conversation, pending written review
 
 ## 1. Goal
 
-A portfolio website for the sculptor Dominique Stipa (La Rochelle, stone and plaster,
-clowns as recurring theme). It must feel like a high-end gallery experience: the
+A portfolio website for the sculptor Dominique Stipa (La Rochelle, stone and plaster).
+Positioning (user, 2026-09-02): he works without preparatory drawing or plan, by feeling;
+the copy underlines a poetic and philosophical dimension around the subconscious in every
+strike on the stone or line on canvas. Clowns are a side interest and are not mentioned.
+It must feel like a high-end gallery experience: the
 visitor walks through the work rather than browsing thumbnails. Reference point: what
 an artist selling pieces for millions would want as their site.
 

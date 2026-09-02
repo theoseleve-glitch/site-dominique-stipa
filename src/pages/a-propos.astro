@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { site } from '../data/site';
 import atelier from '../assets/atelier.jpg';
+import poster from '../assets/taille-directe-poster.jpg';
 ---
 <Base title="À propos">
   <section class="container about">
@@ -24,15 +25,36 @@ import atelier from '../assets/atelier.jpg';
           <ul class="about__expos">{site.expositions.map((e) => <li>{e}</li>)}</ul>
         </section>
       )}
-      <section id="contact" class="contact reveal">
-        <h2 class="label">Contact</h2>
-        <p class="display contact__line"><a class="link-underline" href={`mailto:${site.email}`}>{site.email}</a></p>
-        <p class="display contact__line">
-          <a class="link-underline" href={site.instagram} target="_blank" rel="noopener">Instagram {site.instagramHandle}</a>
-        </p>
-        <p class="label">{site.city}</p>
-      </section>
     </div>
+  </section>
+
+  <section class="container atelier reveal" aria-labelledby="atelier-title">
+    <p class="label">L’atelier</p>
+    <h2 id="atelier-title" class="display atelier__title">Taille directe</h2>
+    <p class="atelier__p">Aucun modèle, aucun tracé : le geste décide. Quelques minutes dans l’atelier.</p>
+    <video
+      class="atelier__video"
+      muted
+      loop
+      playsinline
+      preload="none"
+      poster={poster.src}
+      width="640"
+      height="360"
+      aria-label="Dominique Stipa taille une pierre dans son atelier, vu du dessus"
+      data-autoplay-in-view
+    >
+      <source src="/videos/taille-directe.mp4" type="video/mp4" />
+    </video>
+  </section>
+
+  <section id="contact" class="container contact reveal">
+    <h2 class="label">Contact</h2>
+    <p class="display contact__line"><a class="link-underline" href={`mailto:${site.email}`}>{site.email}</a></p>
+    <p class="display contact__line">
+      <a class="link-underline" href={site.instagram} target="_blank" rel="noopener">Instagram {site.instagramHandle}</a>
+    </p>
+    <p class="label">{site.city}</p>
   </section>
 </Base>
 <style>
@@ -41,10 +63,46 @@ import atelier from '../assets/atelier.jpg';
   .about__title { font-size: clamp(2.6rem, 6vw, 5.5rem); margin: 0.5rem 0 2rem; }
   .about__p { font-size: 1.15rem; line-height: 1.75; max-width: 58ch; color: var(--text); }
   .about__expos { list-style: none; padding: 0; margin: 0.5rem 0 0; display: grid; gap: 0.4rem; }
-  .contact { margin-top: 4rem; scroll-margin-top: 20vh; display: grid; gap: 0.5rem; }
+  .atelier { margin-top: 14vh; display: grid; gap: 0.75rem; }
+  .atelier__title { font-size: clamp(2.2rem, 5vw, 4.5rem); margin: 0; }
+  .atelier__p { margin: 0 0 1.5rem; color: var(--muted); max-width: 58ch; }
+  .atelier__video { width: min(100%, calc(72vh * 16 / 9)); height: auto; aspect-ratio: 16 / 9;
+    background: var(--surface); object-fit: cover; display: block; }
+  .contact { margin-top: 12vh; scroll-margin-top: 20vh; display: grid; gap: 0.5rem; }
   .contact__line { font-size: clamp(1.4rem, 3vw, 2.4rem); margin: 0; }
   @media (min-width: 800px) {
     .about { grid-template-columns: 5fr 6fr; gap: 6vw; align-items: start; }
     .about__media { position: sticky; top: 12vh; }
   }
 </style>
+<script>
+  // Play the atelier video only while it is on screen; never autoplay for people who prefer reduced motion.
+  function setupVideos(): void {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll<HTMLVideoElement>('video[data-autoplay-in-view]').forEach((video) => {
+      if (reduce) {
+        video.controls = true;
+        return;
+      }
+      video.muted = true;
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              video.play().catch((err: unknown) => {
+                // AbortError = play interrupted by our own pause() while scrolling fast: harmless.
+                // NotAllowedError = browser refused autoplay: give the visitor controls instead.
+                if (err instanceof DOMException && err.name === 'NotAllowedError') video.controls = true;
+              });
+            } else {
+              video.pause();
+            }
+          }
+        },
+        { threshold: 0.35 },
+      );
+      io.observe(video);
+    });
+  }
+  document.addEventListener('astro:page-load', setupVideos);
+</script>

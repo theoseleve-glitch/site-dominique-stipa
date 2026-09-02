@@ -9,7 +9,7 @@ interface Props {
   title: string;
   description?: string;
 }
-const { title, description = `${site.name}, sculpteur à ${site.city}. Pierre, plâtre, clowns.` } = Astro.props;
+const { title, description = site.description } = Astro.props;
 const fullTitle = title === site.name ? title : `${title} — ${site.name}`;
 ---
 <!doctype html>
