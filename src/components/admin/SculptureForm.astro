@@ -1,0 +1,84 @@
+---
+interface Props {
+  values: Record<string, string>;
+  /** existing sculpture: photo optional, delete section shown */
+  slug?: string;
+}
+const { values, slug } = Astro.props;
+const editing = Boolean(slug);
+---
+<form method="post" enctype="multipart/form-data" class="form">
+  <fieldset>
+    <legend>La sculpture</legend>
+    <div class="field">
+      <label for="title">Titre</label>
+      <input id="title" name="title" type="text" required maxlength="120" value={values.title} />
+    </div>
+    <div class="row row--3">
+      <div class="field">
+        <label for="year">Année</label>
+        <input id="year" name="year" type="number" required min="1950" max="2100" value={values.year} />
+      </div>
+      <div class="field">
+        <label for="material">Matière</label>
+        <input id="material" name="material" type="text" required maxlength="120" value={values.material} />
+      </div>
+      <div class="field">
+        <label for="dimensions">Dimensions</label>
+        <input id="dimensions" name="dimensions" type="text" maxlength="120" placeholder="45 × 30 × 25 cm" value={values.dimensions} />
+      </div>
+    </div>
+    <div class="field">
+      <label for="body">Texte (facultatif)</label>
+      <textarea id="body" name="body" maxlength="5000">{values.body}</textarea>
+      <span class="hint">Quelques lignes affichées sur la page de la sculpture. Une ligne vide sépare deux paragraphes.</span>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>La photo</legend>
+    {editing && <img class="preview" src={`/admin/image/${slug}`} alt="Photo actuelle" />}
+    <div class="field">
+      <label for="image">{editing ? 'Remplacer la photo' : 'Photo'}</label>
+      <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" required={!editing} />
+      <span class="hint">JPEG, PNG ou WebP, jusqu’à 15 Mo. La photo est automatiquement réduite si elle est très grande.</span>
+    </div>
+    <div class="field">
+      <label for="alt">Description de la photo</label>
+      <input id="alt" name="alt" type="text" required maxlength="300" placeholder="Visage souriant en pierre blanche" value={values.alt} />
+      <span class="hint">Une phrase courte, lue par les personnes malvoyantes et les moteurs de recherche.</span>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Sur le site</legend>
+    <label class="check">
+      <input type="checkbox" name="featured" checked={values.featured === 'on'} />
+      Montrer cette sculpture sur la page d’accueil (6 au maximum)
+    </label>
+    <div class="field">
+      <label for="order">Ordre</label>
+      <input id="order" name="order" type="number" min="0" max="999" value={values.order} />
+      <span class="hint">Les plus petits numéros passent en premier, sur l’accueil et dans le catalogue.</span>
+    </div>
+  </fieldset>
+
+  <div class="actions">
+    <button class="btn" type="submit">{editing ? 'Enregistrer' : 'Ajouter la sculpture'}</button>
+    <a class="btn btn--ghost" href="/admin">Annuler</a>
+  </div>
+</form>
+
+{editing && (
+  <form method="post" class="form" style="margin-top: 4rem">
+    <input type="hidden" name="_action" value="delete" />
+    <fieldset>
+      <legend>Supprimer</legend>
+      <label class="check">
+        <input type="checkbox" name="confirm" required />
+        Je confirme vouloir supprimer définitivement cette sculpture et sa photo.
+      </label>
+      <button class="btn btn--danger" type="submit">Supprimer la sculpture</button>
+    </fieldset>
+  </form>
+)}

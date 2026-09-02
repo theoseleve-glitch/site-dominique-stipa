@@ -1,0 +1,123 @@
+---
+export const prerender = false;
+import { z } from 'astro/zod';
+import Admin from '../../layouts/Admin.astro';
+import { currentEmail, describeError, isSameOrigin, setFlash } from '../../admin/http';
+import { slugify, uniqueSlug } from '../../admin/content';
+import { FormError, readImageField } from '../../admin/sculptureForm';
+import { MAX_VIDEO_BYTES, sniffMp4 } from '../../admin/uploads';
+import { PATHS, readSite, writeSite } from '../../admin/store';
+import type { FileChange } from '../../admin/github';
+import type { SiteData, VideoData } from '../../data/site';
+
+const email = currentEmail(Astro.cookies);
+if (!email) return Astro.redirect('/admin/connexion');
+
+const addSchema = z.object({
+  title: z.string().trim().min(1, 'Le titre est obligatoire.').max(80),
+  caption: z.string().trim().max(200),
+});
+
+let error: string | null = null;
+let site: SiteData | null = null;
+let values = { title: '', caption: '' };
+
+const fileName = (p: string) => p.replace(/^\/videos\//, '');
+
+try {
+  site = await readSite();
+
+  if (Astro.request.method === 'POST') {
+    if (!isSameOrigin(Astro.request)) return new Response('Requête refusée.', { status: 403 });
+    const form = await Astro.request.formData();
+    const action = String(form.get('_action') ?? '');
+
+    if (action === 'delete' || action === 'up') {
+      const index = Number(form.get('index'));
+      const video = site.videos[index];
+      if (!video) throw new FormError('Vidéo introuvable.');
+      const videos = [...site.videos];
+      const extra: FileChange[] = [];
+      if (action === 'delete') {
+        videos.splice(index, 1);
+        extra.push({ path: `${PATHS.videos}/${fileName(video.file)}`, delete: true });
+        if (video.poster) extra.push({ path: `${PATHS.videos}/${fileName(video.poster)}`, delete: true });
+      } else if (index > 0) {
+        [videos[index - 1], videos[index]] = [videos[index], videos[index - 1]];
+      }
+      await writeSite({ ...site, videos }, extra, action === 'delete' ? `admin: suppression de la vidéo « ${video.title} »` : 'admin: ordre des vidéos');
+      setFlash(Astro.cookies, { type: 'ok', text: action === 'delete' ? 'Vidéo supprimée.' : 'Ordre enregistré.' });
+      return Astro.redirect('/admin/videos');
+    }
+
+    // add
+    values = { title: String(form.get('title') ?? ''), caption: String(form.get('caption') ?? '') };
+    const parsed = addSchema.safeParse(values);
+    if (!parsed.success) throw new FormError(parsed.error.issues[0]?.message ?? 'Formulaire invalide.');
+    const file = form.get('video');
+    if (!(file instanceof File) || file.size === 0) throw new FormError('Ajoutez un fichier vidéo MP4.');
+    if (file.size > MAX_VIDEO_BYTES) throw new FormError('La vidéo dépasse 40 Mo. Réduisez-la (par exemple avec l’app Photos) puis réessayez.');
+    const buf = Buffer.from(await file.arrayBuffer());
+    if (!sniffMp4(buf)) throw new FormError('Le fichier doit être une vidéo MP4.');
+    const poster = await readImageField(form, 'poster');
+
+    const taken = site.videos.map((v) => fileName(v.file).replace(/\.mp4$/, ''));
+    const slug = uniqueSlug(slugify(parsed.data.title), taken);
+    const entry: VideoData = {
+      title: parsed.data.title,
+      caption: parsed.data.caption,
+      file: `/videos/${slug}.mp4`,
+      ...(poster ? { poster: `/videos/${slug}.jpg` } : {}),
+    };
+    const extra: FileChange[] = [{ path: `${PATHS.videos}/${slug}.mp4`, content: buf }];
+    if (poster) extra.push({ path: `${PATHS.videos}/${slug}.jpg`, content: poster });
+    await writeSite({ ...site, videos: [...site.videos, entry] }, extra, `admin: ajout de la vidéo « ${entry.title} »`);
+    setFlash(Astro.cookies, { type: 'ok', text: `« ${entry.title} » est ajoutée. Le site se met à jour, comptez deux minutes.` });
+    return Astro.redirect('/admin/videos');
+  }
+} catch (err) {
+  error = err instanceof FormError ? err.message : describeError(err);
+}
+---
+<Admin title="Vidéos" email={email} flash={error ? { type: 'error', text: error } : null}>
+  <h1>Vidéos</h1>
+  <p class="lead">Les cartes postales de l’atelier, sur la page À propos. La première est affichée en grand.</p>
+
+  {site && (
+    <ul class="list">
+      {site.videos.map((v, i) => (
+        <li>
+          {v.poster ? <img src={`/admin/media/${fileName(v.poster)}`} alt="" loading="lazy" /> : <video src={`/admin/media/${fileName(v.file)}`} muted preload="metadata"></video>}
+          <div class="meta"><strong>{v.title}</strong><span>{v.caption}</span><span>{fileName(v.file)}</span></div>
+          <div class="actions">
+            {i > 0 && (
+              <form method="post"><input type="hidden" name="_action" value="up" /><input type="hidden" name="index" value={i} /><button class="btn btn--ghost" type="submit">Monter</button></form>
+            )}
+            <form method="post"><input type="hidden" name="_action" value="delete" /><input type="hidden" name="index" value={i} /><button class="btn btn--danger" type="submit">Supprimer</button></form>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <h2>Ajouter une vidéo</h2>
+  <form method="post" enctype="multipart/form-data" class="form">
+    <input type="hidden" name="_action" value="add" />
+    <fieldset>
+      <legend>La vidéo</legend>
+      <div class="field"><label for="title">Titre</label><input id="title" name="title" type="text" required maxlength="80" value={values.title} /></div>
+      <div class="field"><label for="caption">Légende (facultatif)</label><input id="caption" name="caption" type="text" maxlength="200" value={values.caption} /></div>
+      <div class="field">
+        <label for="video">Fichier MP4</label>
+        <input id="video" name="video" type="file" accept="video/mp4" required />
+        <span class="hint">Jusqu’à 40 Mo. Les vidéos sont lues sans son, en boucle.</span>
+      </div>
+      <div class="field">
+        <label for="poster">Image de couverture (facultatif)</label>
+        <input id="poster" name="poster" type="file" accept="image/jpeg,image/png,image/webp" />
+        <span class="hint">Montrée avant que la vidéo ne démarre. Une capture d’écran de la vidéo convient très bien.</span>
+      </div>
+    </fieldset>
+    <button class="btn" type="submit">Ajouter la vidéo</button>
+  </form>
+</Admin>

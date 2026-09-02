@@ -1,0 +1,63 @@
+---
+export const prerender = false;
+import Admin from '../../layouts/Admin.astro';
+import { verifyPassword } from '../../admin/auth';
+import {
+  clearLoginFailures,
+  currentEmail,
+  describeError,
+  isSameOrigin,
+  loginBlocked,
+  recordLoginFailure,
+  setFlash,
+  startSession,
+} from '../../admin/http';
+import { readCredentials } from '../../admin/store';
+
+let error: string | null = null;
+let emailValue = '';
+
+try {
+  const creds = await readCredentials();
+  if (!creds) return Astro.redirect('/admin/installation');
+  if (currentEmail(Astro.cookies)) return Astro.redirect('/admin');
+
+  if (Astro.request.method === 'POST') {
+    if (!isSameOrigin(Astro.request)) return new Response('Requête refusée.', { status: 403 });
+    const form = await Astro.request.formData();
+    emailValue = String(form.get('email') ?? '').trim().toLowerCase();
+    const password = String(form.get('password') ?? '');
+    const key = Astro.clientAddress ?? 'unknown';
+    if (loginBlocked(key)) {
+      error = 'Trop de tentatives. Patientez une minute.';
+    } else {
+      const ok = emailValue === creds.email && (await verifyPassword(password, creds.passwordHash));
+      if (ok) {
+        clearLoginFailures(key);
+        startSession(Astro.cookies, creds.email);
+        setFlash(Astro.cookies, { type: 'ok', text: 'Connecté.' });
+        return Astro.redirect('/admin');
+      }
+      recordLoginFailure(key);
+      error = 'Adresse e-mail ou mot de passe incorrect.';
+    }
+  }
+} catch (err) {
+  error = describeError(err);
+}
+---
+<Admin title="Connexion" flash={error ? { type: 'error', text: error } : null}>
+  <h1>Connexion</h1>
+  <p class="lead">Espace réservé à l’artiste.</p>
+  <form method="post" class="form">
+    <div class="field">
+      <label for="email">Adresse e-mail</label>
+      <input id="email" name="email" type="email" required autocomplete="username" value={emailValue} />
+    </div>
+    <div class="field">
+      <label for="password">Mot de passe</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password" />
+    </div>
+    <button class="btn" type="submit">Se connecter</button>
+  </form>
+</Admin>

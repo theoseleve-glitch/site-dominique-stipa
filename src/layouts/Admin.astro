@@ -1,0 +1,52 @@
+---
+import '../styles/global.css';
+import '../styles/admin.css';
+import { takeFlash, type Flash } from '../admin/http';
+
+interface Props {
+  title: string;
+  /** null = not logged in (login/installation pages): no navigation */
+  email?: string | null;
+  /** message set by the current request (takes precedence over the cookie flash) */
+  flash?: Flash | null;
+}
+const { title, email = null, flash: directFlash = null } = Astro.props;
+const flash = directFlash ?? takeFlash(Astro.cookies);
+const path = Astro.url.pathname;
+const links = [
+  { href: '/admin', label: 'Tableau de bord', exact: true },
+  { href: '/admin/sculptures/nouvelle', label: 'Ajouter une sculpture' },
+  { href: '/admin/site', label: 'Textes du site' },
+  { href: '/admin/videos', label: 'Vidéos' },
+];
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} — Administration</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="adm">
+    <header class="adm__bar">
+      <div class="container adm__bar-inner">
+        <a href="/admin" class="adm__brand">Administration</a>
+        {email && (
+          <nav aria-label="Administration">
+            {links.map((l) => (
+              <a href={l.href} class:list={{ 'is-active': l.exact ? path === l.href : path.startsWith(l.href) }}>{l.label}</a>
+            ))}
+            <a href="/" target="_blank" rel="noopener">Voir le site ↗</a>
+            <form method="post" action="/admin/deconnexion"><button type="submit">Déconnexion</button></form>
+          </nav>
+        )}
+      </div>
+    </header>
+    <main class="container adm__main">
+      {flash && <p class:list={['flash', `flash--${flash.type}`]} role="status">{flash.text}</p>}
+      <slot />
+    </main>
+  </body>
+</html>

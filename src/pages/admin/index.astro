@@ -1,0 +1,50 @@
+---
+export const prerender = false;
+import Admin from '../../layouts/Admin.astro';
+import { currentEmail, describeError } from '../../admin/http';
+import { listSculptures, readCredentials, readSite, type Sculpture } from '../../admin/store';
+
+let email: string | null = null;
+let sculptures: Sculpture[] = [];
+let heroSlug = '';
+let error: string | null = null;
+try {
+  const creds = await readCredentials();
+  if (!creds) return Astro.redirect('/admin/installation');
+  email = currentEmail(Astro.cookies);
+  if (!email) return Astro.redirect('/admin/connexion');
+  [sculptures, heroSlug] = await Promise.all([listSculptures(), readSite().then((s) => s.heroSlug)]);
+} catch (err) {
+  error = describeError(err);
+}
+---
+<Admin title="Tableau de bord" email={email ?? 'admin'} flash={error ? { type: 'error', text: error } : null}>
+  <h1>Bonjour</h1>
+  <p class="lead">Chaque enregistrement est publié automatiquement. Comptez environ deux minutes avant de voir le changement sur le site.</p>
+
+  <div class="cards">
+    <a class="card" href="/admin/sculptures/nouvelle"><strong>Ajouter une sculpture</strong><span>Photo, titre, année, matière…</span></a>
+    <a class="card" href="/admin/site"><strong>Textes du site</strong><span>Biographie, contact, photo de l’artiste</span></a>
+    <a class="card" href="/admin/videos"><strong>Vidéos</strong><span>Les cartes postales de l’atelier</span></a>
+  </div>
+
+  <h2>Sculptures ({sculptures.length})</h2>
+  {sculptures.length === 0 && !error && <p class="lead">Aucune sculpture pour l’instant.</p>}
+  <ul class="list">
+    {sculptures.map((s) => (
+      <li>
+        <img src={`/admin/image/${s.slug}`} alt="" loading="lazy" />
+        <div class="meta">
+          <strong>{s.data.title}</strong>
+          <span>{s.data.year} — {s.data.material}{s.data.dimensions ? ` — ${s.data.dimensions}` : ''}</span>
+          <span>
+            {s.slug === heroSlug && <span class="tag">Bandeau d’accueil · </span>}
+            {s.data.featured && <span class="tag">Accueil · </span>}
+            <span>ordre {s.data.order}</span>
+          </span>
+        </div>
+        <a class="edit link-underline" href={`/admin/sculptures/${s.slug}`}>Modifier</a>
+      </li>
+    ))}
+  </ul>
+</Admin>

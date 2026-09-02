@@ -1,0 +1,183 @@
+---
+export const prerender = false;
+import { z } from 'astro/zod';
+import Admin from '../../layouts/Admin.astro';
+import { hashPassword } from '../../admin/auth';
+import { currentEmail, describeError, isSameOrigin, setFlash } from '../../admin/http';
+import { FormError, readImageField } from '../../admin/sculptureForm';
+import { listSculptures, PATHS, readCredentials, readSite, writeSite, type Sculpture } from '../../admin/store';
+import type { FileChange } from '../../admin/github';
+import type { SiteData } from '../../data/site';
+
+const email = currentEmail(Astro.cookies);
+if (!email) return Astro.redirect('/admin/connexion');
+
+const formSchema = z.object({
+  firstName: z.string().trim().min(1, 'Le prénom est obligatoire.').max(60),
+  lastName: z.string().trim().min(1, 'Le nom est obligatoire.').max(60),
+  tagline: z.string().trim().min(1, 'Le sous-titre est obligatoire.').max(80),
+  city: z.string().trim().min(1, 'La ville est obligatoire.').max(80),
+  email: z.email({ message: 'Adresse e-mail de contact invalide.' }),
+  instagram: z.url({ message: 'Adresse Instagram invalide (elle doit commencer par https://).' }),
+  instagramHandle: z.string().trim().min(1).max(60),
+  heroSlug: z.string().regex(/^[a-z0-9-]+$/, 'Choisissez la sculpture du bandeau.'),
+  statement: z.string().trim().min(1, 'La phrase d’accueil est obligatoire.').max(300),
+  description: z.string().trim().min(1, 'La description est obligatoire.').max(300),
+  bio: z.string().trim().min(1, 'La biographie est obligatoire.').max(8000),
+  expositions: z.string().trim().max(4000),
+  newPassword: z.string(),
+  confirmPassword: z.string(),
+});
+
+let error: string | null = null;
+let site: SiteData | null = null;
+let sculptures: Sculpture[] = [];
+let values: Record<string, string> = {};
+
+const toValues = (s: SiteData): Record<string, string> => ({
+  firstName: s.firstName,
+  lastName: s.lastName,
+  tagline: s.tagline,
+  city: s.city,
+  email: s.email,
+  instagram: s.instagram,
+  instagramHandle: s.instagramHandle,
+  heroSlug: s.heroSlug,
+  statement: s.statement,
+  description: s.description,
+  bio: s.bio.join('\n\n'),
+  expositions: s.expositions.join('\n'),
+});
+
+try {
+  [site, sculptures] = await Promise.all([readSite(), listSculptures()]);
+  values = toValues(site);
+
+  if (Astro.request.method === 'POST') {
+    if (!isSameOrigin(Astro.request)) return new Response('Requête refusée.', { status: 403 });
+    const form = await Astro.request.formData();
+    const raw: Record<string, string> = {};
+    for (const key of Object.keys(formSchema.shape)) raw[key] = String(form.get(key) ?? '');
+    values = { ...values, ...raw };
+    const parsed = formSchema.safeParse(raw);
+    if (!parsed.success) throw new FormError(parsed.error.issues[0]?.message ?? 'Formulaire invalide.');
+    const f = parsed.data;
+    if (!sculptures.some((s) => s.slug === f.heroSlug)) throw new FormError('La sculpture du bandeau n’existe pas.');
+
+    const next: SiteData = {
+      ...site,
+      firstName: f.firstName,
+      lastName: f.lastName,
+      tagline: f.tagline,
+      city: f.city,
+      email: f.email,
+      instagram: f.instagram,
+      instagramHandle: f.instagramHandle,
+      heroSlug: f.heroSlug,
+      statement: f.statement,
+      description: f.description,
+      bio: f.bio.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean),
+      expositions: f.expositions.split('\n').map((l) => l.trim()).filter(Boolean),
+    };
+
+    const extra: FileChange[] = [];
+    const portrait = await readImageField(form, 'portrait');
+    if (portrait) extra.push({ path: PATHS.portrait, content: portrait });
+
+    if (f.newPassword || f.confirmPassword) {
+      if (f.newPassword.length < 10) throw new FormError('Le nouveau mot de passe doit faire au moins 10 caractères.');
+      if (f.newPassword !== f.confirmPassword) throw new FormError('Les deux mots de passe ne correspondent pas.');
+      const creds = await readCredentials();
+      if (!creds) throw new FormError('Compte introuvable.');
+      extra.push({
+        path: PATHS.credentials,
+        content: JSON.stringify({ email: creds.email, passwordHash: await hashPassword(f.newPassword) }, null, 2) + '\n',
+      });
+    }
+
+    await writeSite(next, extra, 'admin: textes du site');
+    setFlash(Astro.cookies, { type: 'ok', text: 'Enregistré. Le site se met à jour, comptez deux minutes.' });
+    return Astro.redirect('/admin/site');
+  }
+} catch (err) {
+  error = err instanceof FormError ? err.message : describeError(err);
+}
+---
+<Admin title="Textes du site" email={email} flash={error ? { type: 'error', text: error } : null}>
+  <h1>Textes du site</h1>
+  <p class="lead">Tout ce qui est écrit sur le site, sauf les sculptures et les vidéos.</p>
+  {site && (
+    <form method="post" enctype="multipart/form-data" class="form">
+      <fieldset>
+        <legend>L’artiste</legend>
+        <div class="row row--2">
+          <div class="field"><label for="firstName">Prénom</label><input id="firstName" name="firstName" type="text" required value={values.firstName} /></div>
+          <div class="field"><label for="lastName">Nom</label><input id="lastName" name="lastName" type="text" required value={values.lastName} /></div>
+        </div>
+        <div class="row row--2">
+          <div class="field"><label for="tagline">Sous-titre</label><input id="tagline" name="tagline" type="text" required value={values.tagline} /><span class="hint">Par exemple « Sculpteur plasticien ».</span></div>
+          <div class="field"><label for="city">Ville</label><input id="city" name="city" type="text" required value={values.city} /></div>
+        </div>
+        <div class="field">
+          <label for="portrait">Photo de l’artiste (page À propos)</label>
+          <img class="preview" src="/admin/media/portrait.jpg" alt="Photo actuelle" />
+          <input id="portrait" name="portrait" type="file" accept="image/jpeg,image/png,image/webp" />
+          <span class="hint">Laissez vide pour garder la photo actuelle.</span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Les textes</legend>
+        <div class="field">
+          <label for="statement">Phrase d’accueil</label>
+          <input id="statement" name="statement" type="text" required maxlength="300" value={values.statement} />
+          <span class="hint">Une phrase, affichée en grand sur la page d’accueil.</span>
+        </div>
+        <div class="field">
+          <label for="bio">Biographie</label>
+          <textarea id="bio" name="bio" required style="min-height: 16rem">{values.bio}</textarea>
+          <span class="hint">Une ligne vide sépare deux paragraphes.</span>
+        </div>
+        <div class="field">
+          <label for="expositions">Expositions (facultatif)</label>
+          <textarea id="expositions" name="expositions">{values.expositions}</textarea>
+          <span class="hint">Une exposition par ligne, par exemple « 2025 — Salon Laissez parler votre imaginaire, La Rochelle ».</span>
+        </div>
+        <div class="field">
+          <label for="description">Description pour Google et les réseaux</label>
+          <input id="description" name="description" type="text" required maxlength="300" value={values.description} />
+          <span class="hint">Une ou deux phrases. Invisible sur le site, mais montrée dans les résultats de recherche.</span>
+        </div>
+        <div class="field">
+          <label for="heroSlug">Sculpture du bandeau d’accueil</label>
+          <select id="heroSlug" name="heroSlug" required>
+            {sculptures.map((s) => <option value={s.slug} selected={s.slug === values.heroSlug}>{s.data.title} ({s.data.year})</option>)}
+          </select>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Contact</legend>
+        <div class="field"><label for="email">Adresse e-mail affichée</label><input id="email" name="email" type="email" required value={values.email} /></div>
+        <div class="row row--2">
+          <div class="field"><label for="instagram">Lien Instagram</label><input id="instagram" name="instagram" type="url" required value={values.instagram} /></div>
+          <div class="field"><label for="instagramHandle">Nom Instagram</label><input id="instagramHandle" name="instagramHandle" type="text" required value={values.instagramHandle} /></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Mot de passe (facultatif)</legend>
+        <div class="row row--2">
+          <div class="field"><label for="newPassword">Nouveau mot de passe</label><input id="newPassword" name="newPassword" type="password" minlength="10" autocomplete="new-password" /></div>
+          <div class="field"><label for="confirmPassword">Confirmation</label><input id="confirmPassword" name="confirmPassword" type="password" minlength="10" autocomplete="new-password" /></div>
+        </div>
+        <span class="hint">Laissez vide pour ne rien changer.</span>
+      </fieldset>
+
+      <div class="actions">
+        <button class="btn" type="submit">Enregistrer</button>
+        <a class="btn btn--ghost" href="/admin">Annuler</a>
+      </div>
+    </form>
+  )}
+</Admin>

@@ -1,0 +1,53 @@
+---
+export const prerender = false;
+import Admin from '../../../layouts/Admin.astro';
+import SculptureForm from '../../../components/admin/SculptureForm.astro';
+import { currentEmail, describeError, isSameOrigin, setFlash } from '../../../admin/http';
+import { SLUG_RE } from '../../../admin/content';
+import { deleteSculpture, readSculpture, writeSculpture } from '../../../admin/store';
+import { FormError, formValues, readSculptureForm } from '../../../admin/sculptureForm';
+
+const email = currentEmail(Astro.cookies);
+if (!email) return Astro.redirect('/admin/connexion');
+
+const slug = Astro.params.slug ?? '';
+if (!SLUG_RE.test(slug)) return new Response('Introuvable', { status: 404 });
+
+let error: string | null = null;
+let sculpture = null;
+try {
+  sculpture = await readSculpture(slug);
+} catch (err) {
+  error = describeError(err);
+}
+if (!sculpture && !error) return new Response('Sculpture introuvable', { status: 404 });
+
+let values = sculpture ? formValues({ ...sculpture.data, body: sculpture.body }) : formValues({});
+
+if (sculpture && Astro.request.method === 'POST') {
+  if (!isSameOrigin(Astro.request)) return new Response('Requête refusée.', { status: 403 });
+  try {
+    const form = await Astro.request.formData();
+    if (form.get('_action') === 'delete') {
+      if (form.get('confirm') !== 'on') throw new FormError('Cochez la case de confirmation pour supprimer.');
+      await deleteSculpture(sculpture, `admin: suppression de « ${sculpture.data.title} »`);
+      setFlash(Astro.cookies, { type: 'ok', text: `« ${sculpture.data.title} » est supprimée.` });
+      return Astro.redirect('/admin');
+    }
+    const { fields, image } = await readSculptureForm(form);
+    values = formValues(fields);
+    const { body, ...rest } = fields;
+    const imagePath = image ? `./${slug}.jpg` : sculpture.data.image;
+    await writeSculpture(slug, { ...rest, image: imagePath }, body, image, `admin: modification de « ${fields.title} »`, sculpture.data.image);
+    setFlash(Astro.cookies, { type: 'ok', text: 'Enregistré. Le site se met à jour, comptez deux minutes.' });
+    return Astro.redirect(`/admin/sculptures/${slug}`);
+  } catch (err) {
+    error = err instanceof FormError ? err.message : describeError(err);
+  }
+}
+---
+<Admin title={sculpture?.data.title ?? 'Sculpture'} email={email} flash={error ? { type: 'error', text: error } : null}>
+  <h1>{sculpture?.data.title ?? 'Sculpture'}</h1>
+  <p class="lead">Modifiez ce que vous voulez, puis enregistrez.</p>
+  {sculpture && <SculptureForm values={values} slug={slug} />}
+</Admin>

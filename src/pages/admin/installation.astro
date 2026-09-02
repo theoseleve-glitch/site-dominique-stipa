@@ -1,0 +1,65 @@
+---
+export const prerender = false;
+import { z } from 'astro/zod';
+import Admin from '../../layouts/Admin.astro';
+import { hashPassword } from '../../admin/auth';
+import { describeError, isSameOrigin, setFlash, startSession } from '../../admin/http';
+import { readCredentials, writeCredentials } from '../../admin/store';
+
+const schema = z
+  .object({
+    email: z.email({ message: 'Adresse e-mail invalide.' }),
+    password: z.string().min(10, 'Le mot de passe doit faire au moins 10 caractères.'),
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, { message: 'Les deux mots de passe ne correspondent pas.', path: ['confirm'] });
+
+let error: string | null = null;
+let emailValue = '';
+
+try {
+  if (await readCredentials()) return Astro.redirect('/admin/connexion');
+
+  if (Astro.request.method === 'POST') {
+    if (!isSameOrigin(Astro.request)) return new Response('Requête refusée.', { status: 403 });
+    const form = await Astro.request.formData();
+    emailValue = String(form.get('email') ?? '');
+    const parsed = schema.safeParse({
+      email: emailValue.trim().toLowerCase(),
+      password: String(form.get('password') ?? ''),
+      confirm: String(form.get('confirm') ?? ''),
+    });
+    if (!parsed.success) {
+      error = parsed.error.issues[0]?.message ?? 'Formulaire invalide.';
+    } else {
+      const passwordHash = await hashPassword(parsed.data.password);
+      await writeCredentials({ email: parsed.data.email, passwordHash }, 'admin: création du compte');
+      startSession(Astro.cookies, parsed.data.email);
+      setFlash(Astro.cookies, { type: 'ok', text: 'Votre compte est créé. Bienvenue !' });
+      return Astro.redirect('/admin');
+    }
+  }
+} catch (err) {
+  error = describeError(err);
+}
+---
+<Admin title="Installation" flash={error ? { type: 'error', text: error } : null}>
+  <h1>Bienvenue</h1>
+  <p class="lead">Première visite : choisissez l’adresse e-mail et le mot de passe qui vous serviront à modifier le site. Gardez-les précieusement.</p>
+  <form method="post" class="form">
+    <div class="field">
+      <label for="email">Adresse e-mail</label>
+      <input id="email" name="email" type="email" required autocomplete="username" value={emailValue} />
+    </div>
+    <div class="field">
+      <label for="password">Mot de passe</label>
+      <input id="password" name="password" type="password" required minlength="10" autocomplete="new-password" />
+      <span class="hint">Au moins 10 caractères. Une phrase facile à retenir fait un excellent mot de passe.</span>
+    </div>
+    <div class="field">
+      <label for="confirm">Confirmez le mot de passe</label>
+      <input id="confirm" name="confirm" type="password" required minlength="10" autocomplete="new-password" />
+    </div>
+    <button class="btn" type="submit">Créer mon accès</button>
+  </form>
+</Admin>

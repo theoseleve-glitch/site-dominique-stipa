@@ -1,0 +1,56 @@
+/* Admin: same palette and fonts as the site, plain and generous forms. */
+.adm { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+.adm__bar { border-bottom: 1px solid rgba(236, 230, 220, 0.1); padding-block: 1rem; }
+.adm__bar-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; }
+.adm__brand { font-family: var(--font-display); font-size: 1.3rem; margin-right: auto; }
+.adm__bar nav { display: flex; flex-wrap: wrap; gap: 1.25rem; }
+.adm__bar nav a, .adm__bar nav button { color: var(--text); font: inherit; font-size: 0.85rem; background: none; border: 0; padding: 0; cursor: pointer; }
+.adm__bar nav a.is-active { color: var(--accent-text); }
+.adm__main { padding-block: 3rem 5rem; }
+.adm h1 { font-family: var(--font-display); font-weight: 300; font-size: clamp(2rem, 4vw, 3rem); margin: 0 0 0.5rem; }
+.adm h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; margin: 2.5rem 0 1rem; }
+.adm p.lead { color: var(--muted); margin: 0 0 2rem; max-width: 60ch; }
+.flash { padding: 1rem 1.25rem; margin: 0 0 2rem; border-left: 3px solid var(--accent); background: var(--surface); }
+.flash--ok { border-color: #5a9a6a; }
+.flash--error { border-color: var(--accent); }
+
+.form { display: grid; gap: 1.5rem; max-width: 46rem; }
+.form fieldset { border: 1px solid rgba(236, 230, 220, 0.12); padding: 1.5rem; display: grid; gap: 1.25rem; margin: 0; }
+.form legend { font-family: var(--font-display); font-size: 1.25rem; padding-inline: 0.5rem; }
+.field { display: grid; gap: 0.4rem; }
+.field label { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.field .hint { font-size: 0.85rem; color: var(--muted); }
+.field input[type="text"], .field input[type="email"], .field input[type="password"], .field input[type="number"],
+.field input[type="url"], .field textarea, .field select {
+  font: inherit; font-size: 1.05rem; color: var(--text); background: var(--surface);
+  border: 1px solid rgba(236, 230, 220, 0.18); padding: 0.85rem 1rem; width: 100%;
+}
+.field textarea { min-height: 7rem; resize: vertical; }
+.field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+.field input[type="file"] { font: inherit; color: var(--text); }
+.check { display: flex; align-items: center; gap: 0.75rem; font-size: 1rem; }
+.check input { width: 1.25rem; height: 1.25rem; accent-color: var(--accent); }
+.row { display: grid; gap: 1.25rem; }
+@media (min-width: 640px) { .row--2 { grid-template-columns: 1fr 1fr; } .row--3 { grid-template-columns: 1fr 1fr 1fr; } }
+
+.btn { font: inherit; font-size: 0.85rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bg);
+  background: var(--text); border: 0; padding: 1rem 1.75rem; cursor: pointer; justify-self: start; }
+.btn:hover { background: #fff; }
+.btn--ghost { background: none; color: var(--text); border: 1px solid rgba(236, 230, 220, 0.3); }
+.btn--danger { background: none; color: var(--accent-text); border: 1px solid var(--accent); }
+.actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+
+.list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+.list li { display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 1rem; align-items: center;
+  background: var(--surface); padding: 0.75rem 1rem; }
+.list img, .list video { width: 4.5rem; height: 4.5rem; object-fit: cover; background: #000; display: block; }
+.list .meta { display: grid; gap: 0.15rem; }
+.list .meta strong { font-family: var(--font-display); font-weight: 400; font-size: 1.25rem; }
+.list .meta span { color: var(--muted); font-size: 0.85rem; }
+.list a.edit { font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); }
+.tag { display: inline-block; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-text); }
+.preview { max-width: 18rem; display: block; margin-bottom: 0.5rem; background: #000; }
+.cards { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.card { background: var(--surface); padding: 1.5rem; display: grid; gap: 0.5rem; color: var(--text); }
+.card strong { font-family: var(--font-display); font-weight: 400; font-size: 1.4rem; }
+.card span { color: var(--muted); font-size: 0.9rem; }

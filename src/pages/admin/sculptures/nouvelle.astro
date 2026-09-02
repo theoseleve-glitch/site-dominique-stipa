@@ -1,0 +1,38 @@
+---
+export const prerender = false;
+import Admin from '../../../layouts/Admin.astro';
+import SculptureForm from '../../../components/admin/SculptureForm.astro';
+import { currentEmail, describeError, isSameOrigin, setFlash } from '../../../admin/http';
+import { slugify, uniqueSlug } from '../../../admin/content';
+import { listSculptures, writeSculpture } from '../../../admin/store';
+import { FormError, formValues, readSculptureForm } from '../../../admin/sculptureForm';
+
+const email = currentEmail(Astro.cookies);
+if (!email) return Astro.redirect('/admin/connexion');
+
+let error: string | null = null;
+let values = formValues({});
+
+if (Astro.request.method === 'POST') {
+  if (!isSameOrigin(Astro.request)) return new Response('Requête refusée.', { status: 403 });
+  try {
+    const form = await Astro.request.formData();
+    const { fields, image } = await readSculptureForm(form);
+    values = formValues(fields);
+    if (!image) throw new FormError('Ajoutez une photo de la sculpture.');
+    const existing = (await listSculptures()).map((s) => s.slug);
+    const slug = uniqueSlug(slugify(fields.title), existing);
+    const { body, ...rest } = fields;
+    await writeSculpture(slug, { ...rest, image: `./${slug}.jpg` }, body, image, `admin: ajout de « ${fields.title} »`);
+    setFlash(Astro.cookies, { type: 'ok', text: `« ${fields.title} » est enregistrée. Elle apparaîtra sur le site dans environ deux minutes.` });
+    return Astro.redirect(`/admin/sculptures/${slug}`);
+  } catch (err) {
+    error = err instanceof FormError ? err.message : describeError(err);
+  }
+}
+---
+<Admin title="Nouvelle sculpture" email={email} flash={error ? { type: 'error', text: error } : null}>
+  <h1>Nouvelle sculpture</h1>
+  <p class="lead">Une photo, un titre, une année, une matière : c’est tout ce qu’il faut.</p>
+  <SculptureForm values={values} />
+</Admin>
