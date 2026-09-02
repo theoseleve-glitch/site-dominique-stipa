@@ -41,12 +41,23 @@ async function gh<T>(method: string, path: string, body?: unknown): Promise<{ st
 
 const clean = (p: string) => p.replace(/^\/+/, '');
 
+/**
+ * The Contents API can lag a few seconds behind a commit we just made. For a short
+ * window after a write, this instance reads at that exact commit instead of the branch.
+ */
+let recentWrite: { sha: string; at: number } | null = null;
+const RECENT_WRITE_WINDOW_MS = 90_000;
+function readRef(branch: string): string {
+  if (recentWrite && Date.now() - recentWrite.at < RECENT_WRITE_WINDOW_MS) return recentWrite.sha;
+  return branch;
+}
+
 /** File contents at the configured branch, or null when it does not exist. */
 export async function getFile(path: string): Promise<Buffer | null> {
   const { githubRepo, githubBranch } = env();
   const { status, data } = await gh<{ content?: string; encoding?: string }>(
     'GET',
-    `/repos/${githubRepo}/contents/${clean(path)}?ref=${encodeURIComponent(githubBranch)}`,
+    `/repos/${githubRepo}/contents/${clean(path)}?ref=${encodeURIComponent(readRef(githubBranch))}`,
   );
   if (status === 404 || !data?.content) return null;
   return Buffer.from(data.content.replace(/\n/g, ''), 'base64');
@@ -67,7 +78,7 @@ export async function listDir(path: string): Promise<DirEntry[]> {
   const { githubRepo, githubBranch } = env();
   const { status, data } = await gh<DirEntry[] | { message: string }>(
     'GET',
-    `/repos/${githubRepo}/contents/${clean(path)}?ref=${encodeURIComponent(githubBranch)}`,
+    `/repos/${githubRepo}/contents/${clean(path)}?ref=${encodeURIComponent(readRef(githubBranch))}`,
   );
   if (status === 404 || !Array.isArray(data)) return [];
   return data.map((e) => ({ name: e.name, path: e.path, type: e.type }));
@@ -107,5 +118,6 @@ export async function commitFiles(message: string, changes: FileChange[]): Promi
     author: { name: 'Admin du site', email: 'admin@site-dominique-stipa.local' },
   });
   await gh('PATCH', `${base}/refs/heads/${encodeURIComponent(githubBranch)}`, { sha: commit.data.sha, force: false });
+  recentWrite = { sha: commit.data.sha, at: Date.now() };
   return commit.data.sha;
 }
