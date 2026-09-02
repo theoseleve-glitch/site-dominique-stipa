@@ -2,13 +2,13 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import { site } from '../data/site';
-import atelier from '../assets/atelier.jpg';
+import portrait from '../assets/portrait.jpg';
 ---
 <Base title="À propos">
   <section class="container about">
     <div class="about__media reveal" data-parallax="0.08">
       <Image
-        src={atelier}
+        src={portrait}
         alt={`${site.name} présentant ses sculptures au salon`}
         widths={[480, 900, 1080]}
         sizes="(max-width: 800px) 100vw, 45vw"
